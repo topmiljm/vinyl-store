@@ -2,29 +2,38 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
+// GET all products
 router.get("/products", (req, res) => {
-  db.all("SELECT * FROM products", [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    const rows = db.prepare("SELECT * FROM products").all();
     res.json(rows);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
+// ADD product (or return existing)
 router.post("/products", (req, res) => {
   const { title, artist, image, price } = req.body;
 
-  db.run(
-    "INSERT OR IGNORE INTO products (title, artist, image, price) VALUES (?, ?, ?, ?)",
-    [title, artist, image, price],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
+  try {
+    // Insert (ignore if duplicate)
+    db.prepare(`
+      INSERT OR IGNORE INTO products (title, artist, image, price)
+      VALUES (?, ?, ?, ?)
+    `).run(title, artist, image, price);
 
-      // If already exists, fetch the existing row
-      db.get("SELECT * FROM products WHERE title = ? AND artist = ?", [title, artist], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(row); // ✅ returns product with real DB id
-      });
-    }
-  );
+    // Always fetch the product (new OR existing)
+    const product = db.prepare(`
+      SELECT * FROM products
+      WHERE title = ? AND artist = ?
+    `).get(title, artist);
+
+    res.json(product);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

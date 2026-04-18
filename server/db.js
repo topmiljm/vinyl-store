@@ -1,17 +1,24 @@
+const Database = require("better-sqlite3");
+const db = new Database("database.db");
+
+// ==========================
+// ALBUM ART FALLBACKS
+// ==========================
 const overrides = {
   "Pink Floyd-The Dark Side of the Moon":
     "https://upload.wikimedia.org/wikipedia/en/3/3b/Dark_Side_of_the_Moon.png",
 
   "Nirvana-Nevermind":
-    "https://upload.wikimedia.org/wikipedia/en/b/b7/NirvanaNevermindalbumcover.jpg"
+    "https://upload.wikimedia.org/wikipedia/en/b/b7/NirvanaNevermindalbumcover.jpg",
 };
 
+// ==========================
+// ALBUM ART FETCHER
+// ==========================
 const getAlbumArt = async (artist, album) => {
   const key = `${artist}-${album}`;
 
-  if (overrides[key]) {
-    return overrides[key];
-  }
+  if (overrides[key]) return overrides[key];
 
   try {
     const res = await fetch(
@@ -22,19 +29,16 @@ const getAlbumArt = async (artist, album) => {
 
     const data = await res.json();
 
-    const normalize = str =>
+    const normalize = (str) =>
       str.toLowerCase().replace(/[^a-z0-9]/g, "");
 
     const targetArtist = normalize(artist);
     const targetAlbum = normalize(album);
 
-    const match = data.results.find(item => {
-      const apiArtist = normalize(item.artistName);
-      const apiAlbum = normalize(item.collectionName);
-
+    const match = data.results.find((item) => {
       return (
-        apiArtist === targetArtist &&
-        apiAlbum.includes(targetAlbum)
+        normalize(item.artistName) === targetArtist &&
+        normalize(item.collectionName).includes(targetAlbum)
       );
     });
 
@@ -44,169 +48,160 @@ const getAlbumArt = async (artist, album) => {
     return image
       ? image.replace("100x100", "500x500")
       : "https://via.placeholder.com/500?text=No+Image";
-
   } catch (err) {
     console.error("iTunes fetch error:", err);
     return "https://via.placeholder.com/500?text=No+Image";
   }
 };
 
+// ==========================
+// SCHEMA CREATION
+// ==========================
+db.exec(`
+CREATE TABLE IF NOT EXISTS products (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  artist TEXT NOT NULL,
+  price INTEGER NOT NULL,
+  image TEXT,
+  description TEXT,
+  inventory INTEGER DEFAULT 0
+);
 
-const sqlite3 = require("sqlite3").verbose();
+CREATE TABLE IF NOT EXISTS orders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  total INTEGER NOT NULL,
+  user_id INTEGER,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
-const db = new sqlite3.Database("./database.db");
+CREATE TABLE IF NOT EXISTS order_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id INTEGER,
+  title TEXT,
+  price INTEGER,
+  quantity INTEGER,
+  FOREIGN KEY(order_id) REFERENCES orders(id)
+);
 
-db.serialize(() => {
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`);
 
-  // ==========================
-  // PRODUCTS TABLE
-  // ==========================
-  db.run(`
-    CREATE TABLE IF NOT EXISTS products (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      artist TEXT NOT NULL,
-      price INTEGER NOT NULL,
-      image TEXT,
-      description TEXT,
-      inventory INTEGER DEFAULT 0
-    )
-  `);
+// ==========================
+// ADD COLUMN SAFELY
+// ==========================
+try {
+  db.exec(`ALTER TABLE orders ADD COLUMN user_id INTEGER`);
+} catch (err) {
+  // ignore if column already exists
+}
 
-  // ==========================
-  // ORDERS TABLE
-  // ==========================
-  db.run(`
-    CREATE TABLE IF NOT EXISTS orders (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      total INTEGER NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+// ==========================
+// PREPARED STATEMENTS
+// ==========================
+const countProducts = db.prepare("SELECT COUNT(*) as count FROM products");
+const insertProduct = db.prepare(`
+  INSERT INTO products (title, artist, price, image, description, inventory)
+  VALUES (?, ?, ?, ?, ?, ?)
+`);
 
-  // ==========================
-  // ORDER ITEMS TABLE
-  // ==========================
-  db.run(`
-    CREATE TABLE IF NOT EXISTS order_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      order_id INTEGER,
-      title TEXT,
-      price INTEGER,
-      quantity INTEGER,
-      FOREIGN KEY(order_id) REFERENCES orders(id)
-    )
-  `);
+// ==========================
+// SEED DATA
+// ==========================
+async function seedProducts() {
+  const row = countProducts.get();
 
-  // ==========================
-  // USERS TABLE
-  // ==========================
-  db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+  if (row.count > 0) return;
 
-  // ==========================
-  // ADD user_id TO ORDERS (if not exists)
-  // ==========================
-  db.run(`ALTER TABLE orders ADD COLUMN user_id INTEGER REFERENCES users(id)`
-    , (err) => {
-      // Ignore error — column already exists after first run
-    });
+  const products = [
+    {
+      title: "Abbey Road",
+      artist: "The Beatles",
+      price: 2999,
+      description: "Classic 1969 album featuring Come Together and Here Comes The Sun.",
+      inventory: 10,
+    },
+    {
+      title: "The Dark Side of the Moon",
+      artist: "Pink Floyd",
+      price: 3199,
+      description: "Legendary progressive rock album released in 1973.",
+      inventory: 8,
+    },
+    {
+      title: "Rumours",
+      artist: "Fleetwood Mac",
+      price: 2799,
+      description: "One of the best-selling albums of all time.",
+      inventory: 12,
+    },
+    {
+      title: "Nevermind",
+      artist: "Nirvana",
+      price: 3099,
+      description: "The album that defined 90s grunge.",
+      inventory: 6,
+    },
+    {
+      title: "Bitches Brew",
+      artist: "Miles Davis",
+      price: 2499,
+      description: "The groundbreaking jazz fusion album.",
+      inventory: 7,
+    },
+    {
+      title: "OK Computer",
+      artist: "Radiohead",
+      price: 2999,
+      description: "The album that defined 90s alternative rock.",
+      inventory: 5,
+    },
+    {
+      title: "Zeppelin IV",
+      artist: "Led Zeppelin",
+      price: 2999,
+      description: "The fourth studio album by Led Zeppelin.",
+      inventory: 5,
+    },
+    {
+      title: "Purple Rain",
+      artist: "Prince",
+      price: 2799,
+      description: "The soundtrack to the 1984 film.",
+      inventory: 4,
+    },
+  ];
 
-  // ==========================
-  // SEED PRODUCTS (only if empty)
-  // ==========================
-  // db.run("DELETE FROM products");
+  const insertMany = db.transaction((items) => {
+    for (const p of items) {
+      const image = p.image || null;
 
-  db.get("SELECT COUNT(*) as count FROM products", async (err, row) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-
-    if (row.count === 0) {
-      const products = [
-        {
-          title: "Abbey Road",
-          artist: "The Beatles",
-          price: 2999,
-          description: "Classic 1969 album featuring Come Together and Here Comes The Sun.",
-          inventory: 10,
-        },
-        {
-          title: "The Dark Side of the Moon",
-          artist: "Pink Floyd",
-          price: 3199,
-          description: "Legendary progressive rock album released in 1973.",
-          inventory: 8,
-        },
-        {
-          title: "Rumours",
-          artist: "Fleetwood Mac",
-          price: 2799,
-          description: "One of the best-selling albums of all time.",
-          inventory: 12,
-        },
-        {
-          title: "Nevermind",
-          artist: "Nirvana",
-          price: 3099,
-          description: "The album that defined 90s grunge.",
-          inventory: 6,
-        },
-        {
-          title: "Bitches Brew",
-          artist: "Miles Davis",
-          price: 2499,
-          description: "The groundbreaking jazz fusion album.",
-          inventory: 7,
-        },
-        {
-          title: "OK Computer",
-          artist: "Radiohead",
-          price: 2999,
-          description: "The album that defined 90s alternative rock.",
-          inventory: 5,
-        },
-        {
-          title: "Zeppelin IV",
-          artist: "Led Zeppelin",
-          price: 2999,
-          description: "The fourth and final studio album by the English rock band.",
-          inventory: 5,
-        },
-        {
-          title: "Purple Rain",
-          artist: "Prince",
-          price: 2799,
-          description: "The soundtrack to the 1984 film.",
-          inventory: 4,
-        },
-      ];
-
-      for (const product of products) {
-        const image = await getAlbumArt(product.artist, product.title);
-
-        db.run(
-          `INSERT INTO products (title, artist, price, image, description, inventory)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-          [
-            product.title,
-            product.artist,
-            product.price,
-            image,
-            product.description,
-            product.inventory,
-          ]
-        );
-      }
+      insertProduct.run(
+        p.title,
+        p.artist,
+        p.price,
+        image,
+        p.description,
+        p.inventory
+      );
     }
   });
-});
+
+  // fetch images first (async), then insert
+  const enriched = [];
+  for (const p of products) {
+    const image = await getAlbumArt(p.artist, p.title);
+    enriched.push({ ...p, image });
+  }
+
+  insertMany(enriched);
+}
+
+seedProducts();
 
 module.exports = db;

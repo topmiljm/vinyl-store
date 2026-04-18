@@ -7,20 +7,19 @@ router.post("/create-checkout-session", checkout);
 router.post("/webhook", express.raw({ type: "application/json" }), webhook);
 
 router.get("/", (req, res) => {
-  db.all(`
-    SELECT 
-      orders.id AS order_id,
-      orders.total,
-      orders.created_at,
-      order_items.title,
-      order_items.quantity
-    FROM orders
-    LEFT JOIN order_items 
-      ON orders.id = order_items.order_id
-  `, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    const rows = db.prepare(`
+      SELECT 
+        orders.id AS order_id,
+        orders.total,
+        orders.created_at,
+        order_items.title,
+        order_items.quantity
+      FROM orders
+      LEFT JOIN order_items 
+        ON orders.id = order_items.order_id
+    `).all();
 
-    // Transform into grouped structure
     const orders = {};
 
     rows.forEach(row => {
@@ -42,7 +41,10 @@ router.get("/", (req, res) => {
     });
 
     res.json(Object.values(orders));
-  });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const db = require("./db");
 
-db.run("DELETE FROM products", () => {
-  console.log("Products cleared");
-});
+const clearProducts = db.prepare("DELETE FROM products");
+clearProducts.run();
+
+console.log("Products cleared");

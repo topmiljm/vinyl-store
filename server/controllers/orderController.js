@@ -4,7 +4,7 @@ const { createCheckoutSession } = require("../services/StripeService");
 
 const checkout = async (req, res) => {
   const { cart, userId } = req.body;
-  console.log("userId received from frontend:", userId);
+
   try {
     const session = await createCheckoutSession(cart, userId);
     res.json({ url: session.url });
@@ -30,44 +30,59 @@ const webhook = (req, res) => {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    console.log("user_id from metadata:", session.metadata.user_id); // ✅ is it arriving?
-    console.log("cart from metadata:", session.metadata.cart);        // ✅ is cart there?
+
     const cartMeta = JSON.parse(session.metadata.cart);
     const total = session.amount_total;
     const userId = session.metadata.user_id || null;
-    console.log("userId being saved:", userId);                        // ✅ null or a number?
 
     console.log("✅ Payment received!");
+    console.log("userId:", userId);
 
-    db.run("INSERT INTO orders (total, user_id) VALUES (?, ?)", [total, userId], function (err) {
-      if (err) return console.error(err);
-      const orderId = this.lastID;
+    try {
+      // ✅ better-sqlite3: prepared statements
+      const insertOrder = db.prepare(
+        "INSERT INTO orders (total, user_id) VALUES (?, ?)"
+      );
 
-      // ✅ Wrap each item insert in a Promise so they all complete
-      const insertPromises = cartMeta.map(item => {
-        return new Promise((resolve, reject) => {
-          db.get("SELECT title FROM products WHERE id = ?", [item.id], (err, product) => {
-            if (err || !product) return reject(`Product not found: ${item.id}`);
+      const getProduct = db.prepare(
+        "SELECT title FROM products WHERE id = ?"
+      );
 
-            db.run(
-              "INSERT INTO order_items (order_id, title, price, quantity) VALUES (?, ?, ?, ?)",
-              [orderId, product.title, item.price, item.quantity],
-              (err) => {
-                if (err) return reject(err);
-                resolve();
-              }
-            );
-          });
-        });
+      const insertItem = db.prepare(
+        "INSERT INTO order_items (order_id, title, price, quantity) VALUES (?, ?, ?, ?)"
+      );
+
+      // ✅ insert order
+      const result = insertOrder.run(total, userId);
+      const orderId = result.lastInsertRowid;
+
+      // (optional but recommended) transaction for safety
+      const insertOrderItems = db.transaction((items) => {
+        for (const item of items) {
+          const product = getProduct.get(item.id);
+
+          if (!product) {
+            throw new Error(`Product not found: ${item.id}`);
+          }
+
+          insertItem.run(
+            orderId,
+            product.title,
+            item.price,
+            item.quantity
+          );
+        }
       });
 
-      Promise.all(insertPromises)
-        .then(() => console.log("✅ Order saved:", orderId))
-        .catch(err => console.error("❌ Failed to save order items:", err));
-    });
+      insertOrderItems(cartMeta);
+
+      console.log("✅ Order saved:", orderId);
+    } catch (err) {
+      console.error("❌ Failed to save order:", err.message);
+    }
   }
 
-  res.json({ received: true }); // ✅ Stripe gets its response immediately
+  res.json({ received: true });
 };
 
 module.exports = { checkout, webhook };
