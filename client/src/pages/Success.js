@@ -7,7 +7,7 @@ const Success = () => {
 
   useEffect(() => {
     clearCart(); // Clear cart on success page load
-  }, []);
+  }, [clearCart]);
 
   return (
     <div className="success-page">
