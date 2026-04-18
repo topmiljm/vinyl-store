@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require("../db");
 const authMiddleware = require("../middleware/auth");
 
-router.get("/my-orders", authMiddleware, (req, res) => {
+router.get("/", authMiddleware, (req, res) => {
   try {
     const rows = db.prepare(`
       SELECT

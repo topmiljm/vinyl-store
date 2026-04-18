@@ -26,7 +26,7 @@ app.use(
 app.use(express.json());
 
 app.use("/products", productRoutes);
-app.use("/orders", orderRoutes);
+app.use("/create-checkout-session", orderRoutes);
 app.use("/search", searchRoutes);
 app.use("/auth", authRoutes);
 app.use("/my-orders", myOrdersRoutes);

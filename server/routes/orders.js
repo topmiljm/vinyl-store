@@ -3,8 +3,7 @@ const router = express.Router();
 const { checkout, webhook } = require("../controllers/orderController");
 const db = require("../db");
 
-router.post("/create-checkout-session", checkout);
-router.post("/webhook", express.raw({ type: "application/json" }), webhook);
+router.post("/", checkout);
 
 router.get("/", (req, res) => {
   try {

@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require("../db");
 
 // GET all products
-router.get("/products", (req, res) => {
+router.get("/", (req, res) => {
   try {
     const rows = db.prepare("SELECT * FROM products").all();
     res.json(rows);
@@ -13,7 +13,7 @@ router.get("/products", (req, res) => {
 });
 
 // ADD product (or return existing)
-router.post("/products", (req, res) => {
+router.post("/", (req, res) => {
   const { title, artist, image, price } = req.body;
 
   try {

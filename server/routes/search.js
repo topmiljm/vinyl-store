@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 
-router.get("/search", async (req, res) => {
+router.get("/", async (req, res) => {
   const term = req.query.term;
 
   if (!term) {
