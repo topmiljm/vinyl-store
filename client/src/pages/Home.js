@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ProductCard from "../components/ProductCard";
 import Cart from "../components/Cart";
 import Navbar from "../components/Navbar";
+import { getProducts, searchProducts } from "../services/api";
 
 const Home = () => {
   const [products, setProducts] = useState([]);
@@ -9,8 +10,7 @@ const Home = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const fetchProducts = async () => {
-    const res = await fetch("http://localhost:5000/products");
-    const data = await res.json();
+    const data = await getProducts();
     setProducts(data);
   };
 
@@ -19,9 +19,8 @@ const Home = () => {
   }, []);
 
   const handleSearch = async (term) => {
-    const res = await fetch(`http://localhost:5000/search?term=${term}`);
-    const data = await res.json();
-    setSearchResults(data); // ✅ don't overwrite products
+    const data = await searchProducts(term);
+    setSearchResults(data);
   };
 
   const handleReset = () => {

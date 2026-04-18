@@ -1,5 +1,6 @@
 import { useCart } from "../context/CartContext";
 import { useState } from "react";
+import { upsertProduct } from "../services/api";
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
@@ -10,19 +11,14 @@ const ProductCard = ({ product }) => {
     // ✅ Already a DB product — add directly
     if (product.id && product.id < 1000000) {
       addToCart(product);
-      setAdded(true); // ✅ feedback for DB products too
+      setAdded(true); 
       setTimeout(() => setAdded(false), 2000);
       return;
     }
 
     // 🔍 iTunes search result — upsert into DB first
     try {
-      const res = await fetch("http://localhost:5000/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(product)
-      });
-      const saved = await res.json();
+      const saved = await upsertProduct(product);
       addToCart(saved);
 
       setAdded(true);

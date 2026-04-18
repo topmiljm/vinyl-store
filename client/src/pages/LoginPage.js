@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { authRequest } from "../services/api";
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -19,11 +20,7 @@ const LoginPage = () => {
     const endpoint = isRegister ? "/auth/register" : "/auth/login";
 
     try {
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await authRequest(endpoint, email, password);
 
       const data = await res.json();
 

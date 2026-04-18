@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { getOrders } from "../services/api";
 
 const OrdersPage = () => {
   const { user } = useAuth();
@@ -16,10 +17,7 @@ const OrdersPage = () => {
     }
 
     const fetchOrders = async () => {
-      const res = await fetch("http://localhost:5000/orders/my-orders", {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-      const data = await res.json();
+      const data = await getOrders(user.token);
       setOrders(data);
       setLoading(false);
     };

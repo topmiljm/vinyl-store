@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
-import { useAuth } from "../context/AuthContext"; // ✅ add this
+import { useAuth } from "../context/AuthContext";
+import { createCheckoutSession } from "../services/api";
 
 const Cart = ({ isOpen, onClose }) => {
   const { cart, removeFromCart, total, increaseQuantity, decreaseQuantity, clearCart } = useCart();
@@ -11,14 +12,7 @@ const Cart = ({ isOpen, onClose }) => {
     setLoading(true);
     console.log("sending userId:", user ? user.id : null);
     try {
-      const res = await fetch("http://localhost:5000/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cart,
-          userId: user ? user.id : null, // ✅ send userId if logged in
-        }),
-      });
+      const res = await createCheckoutSession(cart, user ? user.id : null);
 
       const data = await res.json();
 
