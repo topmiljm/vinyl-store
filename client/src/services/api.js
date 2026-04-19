@@ -24,6 +24,7 @@ export const getOrders = async (token) => {
   const res = await fetch(`${API_URL}/orders/my-orders`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+  if (!res.ok) throw new Error(`Failed to fetch orders: ${res.status}`);
   return res.json();
 };
 

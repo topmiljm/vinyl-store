@@ -29,7 +29,7 @@ app.use("/products", productRoutes);
 app.use("/create-checkout-session", orderRoutes);
 app.use("/search", searchRoutes);
 app.use("/auth", authRoutes);
-app.use("/my-orders", myOrdersRoutes);
+app.use("/orders", myOrdersRoutes);
 
 app.get("/", (req, res) => {
   res.send("Vinyl Store API running 🎵");
