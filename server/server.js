@@ -12,7 +12,9 @@ const myOrdersRoutes = require("./routes/myOrders");
 const app = express();
 
 // webhook must come BEFORE json middleware
+const { webhook } = require("./controllers/orderController");
 app.use("/webhook", express.raw({ type: "application/json" }));
+app.post("/webhook", webhook);
 
 app.use(
   cors({
