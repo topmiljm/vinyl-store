@@ -1,22 +1,21 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { useEffect } from "react";
 
 const Success = () => {
   const { clearCart } = useCart();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    clearCart(); // Clear cart on success page load
-  }, [clearCart]);
+  const handleBackToStore = () => {
+    clearCart();
+    navigate("/");
+  };
 
   return (
     <div className="success-page">
       <h1>✅ Payment Successful</h1>
       <p>Thanks for your purchase!</p>
 
-      <Link to="/">
-        <button>Back to Store</button>
-      </Link>
+      <button onClick={handleBackToStore}>Back to Store</button>
     </div>
   );
 };
