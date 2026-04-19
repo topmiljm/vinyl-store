@@ -30,7 +30,7 @@ const Navbar = ({ onSearch, onReset, onCartClick }) => {
 
   return (
     <nav className="navbar">
-      <h2 className="logo">Vinyl Store 🎵</h2>
+      <h2 className="logo">JT's Vinyl Store 🎵</h2>
 
       <input
         type="text"
