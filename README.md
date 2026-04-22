@@ -2,9 +2,9 @@
 
 A full-stack e-commerce web application for browsing and purchasing vinyl records, featuring authentication, cart functionality, and Stripe-powered checkout.
 
-🌐 **Live Demo:** *(add after deployment)*
-🔗 **Frontend:** *(Vercel link)*
-🔗 **Backend API:** *(Render link)*
+🌐 **Live Demo:** jtsvinylstore.vercel.app
+🔗 **Frontend:** jtsvinylstore.vercel.app
+🔗 **Backend API:** jts-vinyl-store.onrender.com
 
 ---
 
@@ -34,6 +34,7 @@ A full-stack e-commerce web application for browsing and purchasing vinyl record
 * Node.js
 * Express
 * REST API
+* better-sqlite3
 * Stripe Webhooks
 * Render (hosting)
 
@@ -56,8 +57,8 @@ vinyl-store/
 
 ## 🌐 Deployment
 
-* **Frontend:** Vercel
-* **Backend:** Render (free tier)
+* **Frontend:** jtsvinylstore.vercel.app
+* **Backend:** jts-vinyl-store.onrender.com (free tier)
 
 ⚠️ **Note:** The backend may take a few seconds to respond on first request due to cold start behavior on Render’s free tier.
 
@@ -72,13 +73,14 @@ PORT=5000
 STRIPE_SECRET_KEY=your_key
 STRIPE_WEBHOOK_SECRET=your_webhook_secret
 JWT_SECRET=your_secret
-CLIENT_URL=http://localhost:3000
+CLIENT_URL=http://jtsvinylstore.vercel.app
 ```
 
 ### Client (`/client/.env`)
 
 ```
-REACT_APP_API_URL=http://localhost:5000
+REACT_APP_API_URL=https://jts-vinyl-store.onrender.com
+
 ```
 
 ---
@@ -117,6 +119,11 @@ node server.js
 cd client
 npm start
 ```
+
+---
+## Configure Stripe Webhook locally
+
+stripe listen --forward-to localhost:5000/webhook
 
 ---
 
