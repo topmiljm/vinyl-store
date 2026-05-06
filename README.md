@@ -19,6 +19,17 @@ A full-stack e-commerce web application for browsing and purchasing vinyl record
 
 ---
 
+## Screenshots
+
+![Screenshot 1](screenshots/screenshot-1.jpg)
+![Screenshot 2](screenshots/screenshot-2.jpg)
+![Screenshot 3](screenshots/screenshot-3.jpg)
+![Screenshot 4](screenshots/screenshot-4.jpg)
+![Screenshot 5](screenshots/screenshot-5.jpg)
+![Screenshot 6](screenshots/screenshot-6.jpg)
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Frontend
