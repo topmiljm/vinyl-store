@@ -139,6 +139,14 @@ stripe listen --forward-to localhost:5000/webhook
 
 ---
 
+## 📧 Email Order Confirmations
+
+After a successful Stripe payment, customers automatically receive an order confirmation email containing their order ID, itemized list of purchases, and total. This is powered by [Resend](https://resend.com) and triggered via Stripe webhooks.
+
+To enable locally, add your `RESEND_API_KEY` to `/server/.env`. Note that Resend's `onboarding@resend.dev` sender address can only send to your own verified email during development. For production, configure a custom sender domain in the Resend dashboard.
+
+---
+
 ## 🔐 Security Notes
 
 * Environment variables are used to protect sensitive data
