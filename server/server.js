@@ -8,23 +8,17 @@ const orderRoutes = require("./routes/orders");
 const searchRoutes = require("./routes/search");
 const authRoutes = require("./routes/auth");
 const myOrdersRoutes = require("./routes/myOrders");
+const { webhook } = require("./controllers/orderController");
 
 const app = express();
 
-// webhook must come BEFORE json middleware
-const { webhook } = require("./controllers/orderController");
-app.use("/webhook", express.raw({ type: "application/json" }));
-app.post("/webhook", webhook);
+// ✅ Webhook MUST come before express.json()
+app.post("/webhook", express.raw({ type: "application/json" }), webhook);
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      process.env.CLIENT_URL
-    ],
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: ["http://localhost:3000", process.env.CLIENT_URL],
+  credentials: true,
+}));
 app.use(express.json());
 
 app.use("/products", productRoutes);
@@ -38,7 +32,4 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

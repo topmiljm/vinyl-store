@@ -3,10 +3,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const createCheckoutSession = async (cart, userId = null) => {
 
-  const cartMeta = cart.map(({ id, quantity, price }) => ({
+  const cartMeta = cart.map(({ id, quantity, price, title }) => ({
     id,
     quantity,
-    price
+    price,
+    title
   }));
 
   return await stripe.checkout.sessions.create({
@@ -23,8 +24,11 @@ const createCheckoutSession = async (cart, userId = null) => {
       quantity: item.quantity
     })),
     mode: "payment",
-    success_url: `${process.env.CLIENT_URL}/success`,
+    success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.CLIENT_URL}/cancel`,
+    
+    customer_creation: "always",
+
     metadata: {
       cart: JSON.stringify(cartMeta),
       ...(userId && { user_id: String(userId) })
