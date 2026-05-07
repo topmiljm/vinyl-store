@@ -53,6 +53,12 @@ const webhook = async (req, res) => {
     const userId = session.metadata.user_id || null;
     console.log("👤 userId:", userId);
 
+    const orderDate = new Date().toLocaleString("en-US", {
+      timeZone: "America/Los_Angeles",
+      dateStyle: "long",
+      timeStyle: "short"
+    });
+
     try {
       const insertOrder = db.prepare(
         "INSERT INTO orders (total, user_id) VALUES (?, ?)"
@@ -99,6 +105,7 @@ const webhook = async (req, res) => {
           html: `
             <h2>Thanks for your order!</h2>
             <p><strong>Order ID:</strong> ${orderId}</p>
+            <p><strong>Date:</strong> ${orderDate} PT</p>
             <p><strong>Total:</strong> $${(total / 100).toFixed(2)}</p>
             <h3>Items:</h3>
             <ul>
