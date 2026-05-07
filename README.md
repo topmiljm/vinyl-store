@@ -47,6 +47,7 @@ A full-stack e-commerce web application for browsing and purchasing vinyl record
 * REST API
 * better-sqlite3
 * Stripe Webhooks
+* Resend (transactional email)
 * Render (hosting)
 
 ### Payments
@@ -152,7 +153,6 @@ stripe listen --forward-to localhost:5000/webhook
 * Inventory management
 * Improved user order history UI
 * Performance optimizations
-* Email order confirmations
 
 ---
 
