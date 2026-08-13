@@ -5,8 +5,8 @@ const db = new Database("database.db");
 // ALBUM ART FALLBACKS
 // ==========================
 const overrides = {
-  "Pink Floyd-The Dark Side of the Moon":
-    "https://upload.wikimedia.org/wikipedia/en/3/3b/Dark_Side_of_the_Moon.png",
+  "Pink Floyd-Wish You Were Here":
+    "https://en.wikipedia.org/wiki/Wish_You_Were_Here_(Pink_Floyd_album)#/media/File:Pink_Floyd,_Wish_You_Were_Here_(1975).png",
 
   "Nirvana-Nevermind":
     "https://upload.wikimedia.org/wikipedia/en/b/b7/NirvanaNevermindalbumcover.jpg",
@@ -127,10 +127,10 @@ async function seedProducts() {
       inventory: 10,
     },
     {
-      title: "The Dark Side of the Moon",
+      title: "Wish You Were Here",
       artist: "Pink Floyd",
-      price: 3199,
-      description: "Legendary progressive rock album released in 1973.",
+      price: 3099,
+      description: "Legendary progressive rock album released in 1975.",
       inventory: 8,
     },
     {

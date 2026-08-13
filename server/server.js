@@ -21,6 +21,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use("/products", productRoutes);
 app.use("/create-checkout-session", orderRoutes);
 app.use("/search", searchRoutes);
