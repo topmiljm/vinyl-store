@@ -1,6 +1,13 @@
 const db = require("./db");
 
-const clearProducts = db.prepare("DELETE FROM products");
-clearProducts.run();
+async function reset() {
+    const clearProducts = db.prepare("DELETE FROM products");
+    clearProducts.run();
+    console.log("Products cleared");
 
-console.log("Products cleared");
+
+    await db.seedProducts();
+    console.log("Products reseeded");
+}
+
+reset();

@@ -5,11 +5,11 @@ const db = new Database("database.db");
 // ALBUM ART FALLBACKS
 // ==========================
 const overrides = {
-  "Pink Floyd-Wish You Were Here":
-    "https://en.wikipedia.org/wiki/Wish_You_Were_Here_(Pink_Floyd_album)#/media/File:Pink_Floyd,_Wish_You_Were_Here_(1975).png",
+//   "Pink Floyd-Wish You Were Here":
+//     "https://upload.wikimedia.org/wikipedia/en/a/a4/Pink_Floyd%2C_Wish_You_Were_Here_%281975%29.png",
 
-  "Nirvana-Nevermind":
-    "https://upload.wikimedia.org/wikipedia/en/b/b7/NirvanaNevermindalbumcover.jpg",
+//   "Nirvana-Nevermind":
+//     "https://upload.wikimedia.org/wikipedia/en/b/b7/NirvanaNevermindalbumcover.jpg",
 };
 
 // ==========================
@@ -141,10 +141,10 @@ async function seedProducts() {
       inventory: 12,
     },
     {
-      title: "Nevermind",
+      title: "In Utero",
       artist: "Nirvana",
       price: 3099,
-      description: "The album that defined 90s grunge.",
+      description: "Nirvana's raw, abrasive final studio album, released in 1993.",
       inventory: 6,
     },
     {
@@ -204,4 +204,5 @@ async function seedProducts() {
 
 seedProducts();
 
+db.seedProducts = seedProducts;
 module.exports = db;

@@ -1,5 +1,8 @@
 require("dotenv").config();
 
+
+const db = require("./db");
+
 const express = require("express");
 const cors = require("cors");
 
@@ -20,6 +23,17 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+
+// TEMPORARY - remove after running once
+app.get("/admin/reset-products", async (req, res) => {
+  try {
+    db.prepare("DELETE FROM products").run();
+    await db.seedProducts();
+    res.send("Products reset successfully");
+  } catch (err) {
+    res.status(500).send("Error: " + err.message);
+  }
+});
 
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });

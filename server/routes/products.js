@@ -4,6 +4,7 @@ const db = require("../db");
 
 // GET all products
 router.get("/", (req, res) => {
+  res.set("Cache-Control", "no-store");
   try {
     const rows = db.prepare("SELECT * FROM products").all();
     res.json(rows);
